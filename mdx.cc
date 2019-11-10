@@ -295,6 +295,13 @@ private:
       if(cacheDir==nullptr)
           cacheDir = new QTemporaryDir(QDir::temp().absolutePath() + QDir::separator() + QString::fromStdString(getId()));
       const QString ltFile = cacheDir->filePath(filename).replace("\\", "/");
+      if(filename.contains("/"))
+      {
+          QString filenameDir = filename.left(filename.lastIndexOf("/"));
+          QDir dir(cacheDir->path());
+          dir.mkpath(filenameDir);
+      }
+
       if(!QFile::exists(ltFile))
       {
           QFile ftP(ltFile);

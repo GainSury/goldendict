@@ -206,6 +206,9 @@ mac {
     }
     INCLUDEPATH = $${PWD}/maclibs/include
     LIBS += -L$${PWD}/maclibs/lib -framework AppKit -framework Carbon
+    LIBS += -lz
+    LIBS += -llzo2
+    LIBS += -lbz2
     OBJECTIVE_SOURCES += lionsupport.mm \
                          machotkeywrapper.mm \
                          macmouseover.mm \
