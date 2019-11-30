@@ -33,6 +33,7 @@
 #include <QAtomicInt>
 #include <QTextDocument>
 #include <QCryptographicHash>
+#include <QFile>
 #ifdef MDX_LOCALVIDEO_CACHED
 #include <QTemporaryDir>
 #endif
@@ -42,6 +43,7 @@
 #endif
 
 #include "qt4x5.hh"
+
 
 namespace Mdx
 {
@@ -1049,8 +1051,9 @@ void MdxDictionary::loadArticle( uint32_t offset, string & articleText, bool noF
 
   article = MdictParser::substituteStylesheet( article, styleSheets );
 
-  if( !noFilter )
+  if( !noFilter ){
     article = filterResource( articleId, article );
+  }
 
   // Check for unclosed <span> and <div>
 
@@ -1071,7 +1074,10 @@ void MdxDictionary::loadArticle( uint32_t offset, string & articleText, bool noF
   }
 
   articleText = string( article.toUtf8().constData() );
+
 }
+
+
 
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
 QString & MdxDictionary::filterResource( QString const & articleId, QString & article )
@@ -1079,7 +1085,7 @@ QString & MdxDictionary::filterResource( QString const & articleId, QString & ar
   QString id = QString::fromStdString( getId() );
   QString uniquePrefix = QString::fromLatin1( "g" ) + id + "_" + articleId + "_";
 
-  QRegularExpression allLinksRe( "(?:<\\s*(a(?:rea)?|img|link|script|embed|source)(?:\\s+[^>]+|\\s*)>)",
+  QRegularExpression allLinksRe( "(?:<\\s*(a(?:rea)?|img|link|script|embed|source|video)(?:\\s+[^>]+|\\s*)>)",
                                  QRegularExpression::CaseInsensitiveOption );
   QRegularExpression wordCrossLink( "([\\s\"']href\\s*=)\\s*([\"'])entry://([^>#]*?)((?:#[^>]*?)?)\\2",
                                     QRegularExpression::CaseInsensitiveOption );
@@ -1192,6 +1198,8 @@ QString & MdxDictionary::filterResource( QString const & articleId, QString & ar
             || linkType.compare( "embed" ) == 0
         #ifdef MDX_LOCALVIDEO_CACHED
             || linkType.compare( "source" ) == 0
+            || linkType.compare( "video" ) == 0
+
         #endif
             )
     {
@@ -1233,6 +1241,10 @@ QString & MdxDictionary::filterResource( QString const & articleId, QString & ar
               newLink = linkTxt.replace( match.capturedStart(), match.capturedLength(), newText );
             }
         }
+        else if(linkType.compare( "video" ) == 0)
+        {
+            newLink = "<video controls=\"controls\" preload=\"none\">";
+        }
         else
           newLink = linkTxt.replace( srcRe2,
                                      "\\1\"bres://" + id + "/\\2\"" );
@@ -1250,6 +1262,7 @@ QString & MdxDictionary::filterResource( QString const & articleId, QString & ar
     articleNewText += article.midRef( linkPos );
     article = articleNewText;
   }
+
 
   return article;
 }
